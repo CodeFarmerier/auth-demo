@@ -12,9 +12,9 @@ import CardSocial from "./card-social";
 import BackButton from "./back-button";
 interface CardWrapperProps {
   children: React.ReactNode;
-  headerLabel: string;
-  backButtonLabel: string;
-  backButtonHref: string;
+  headerLabel: string; // 头名称
+  backButtonLabel: string; // 注册名称
+  backButtonHref: string; // 注册链接
   showSocial: boolean; // 是否显示社交按钮
 }
 const CardWrapper = ({
