@@ -5,7 +5,7 @@ import { db } from "./lib/db";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { LoginSchema } from "./schemas";
-import { getUserEmail } from "./data/login";
+import { getUserById, getUserEmail } from "./data/login";
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
   ...authConfig,
@@ -32,4 +32,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    async session({ token, session }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+        session.role = token.role;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (!token.sub) return token;
+      const existingUser = await getUserById(token.sub);
+      if (!existingUser) return token;
+      token.role = existingUser.role;
+      return token;
+    },
+  },
 });
