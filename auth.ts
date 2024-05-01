@@ -6,6 +6,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { LoginSchema } from "./schemas";
 import { getUserById, getUserEmail } from "./data/login";
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
   ...authConfig,
@@ -36,7 +37,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
-        session.role = token.role;
+        session.user.role = token.role as string;
       }
       return session;
     },
