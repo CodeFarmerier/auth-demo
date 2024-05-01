@@ -1,14 +1,20 @@
 import NextAuth from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { authConfig } from "./auth.config";
 import { db } from "./lib/db";
 import Credentials from "next-auth/providers/credentials";
+
 import bcrypt from "bcrypt";
 import { LoginSchema } from "./schemas";
 import { getUserById, getUserEmail } from "./data/login";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
-  trustHost: true,
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
   ...authConfig,
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
@@ -32,6 +38,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         return user;
       },
     }),
+    GitHubProvider({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
   callbacks: {
     async session({ token, session }) {
@@ -47,6 +61,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!existingUser) return token;
       token.role = existingUser.role;
       return token;
+    },
+  },
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: {
+          id: user.id,
+        },
+        data: { emailVerified: new Date() },
+      });
     },
   },
 });
