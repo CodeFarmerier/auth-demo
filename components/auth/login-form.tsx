@@ -33,7 +33,7 @@ const LoginForm = () => {
     setErr("");
     setSuccess("");
     const res = await login(values);
-    res?.error ? setErr(res?.error) : setSuccess(res?.success);
+    // res?.error ? setErr(res?.error) : setSuccess(res?.success);
 
     // success
   };
